@@ -14,6 +14,10 @@ import org.springframework.web.client.RestTemplate;
 import com.movie.rental.client.CatalogueClient;
 import com.movie.rental.client.UserClient;
 import com.movie.rental.dao.RentalRepository;
+import com.movie.rental.exception.MovieNotFoundException;
+import com.movie.rental.exception.RentalNotFoundException;
+import com.movie.rental.exception.UserNotFoundException;
+import com.movie.rental.model.ExceptionMessage;
 import com.movie.rental.model.Movie;
 import com.movie.rental.model.Rental;
 import com.movie.rental.model.User;
@@ -43,14 +47,15 @@ public class RentalServiceImpl implements RentalService {
 		log.info("Looking up for the user" + id + " " + Thread.currentThread().getName());
 
 		Optional<User> u = userclient.findById(id);
+		if(u.isEmpty()) throw new UserNotFoundException(ExceptionMessage.USER_NOTFOUND.getMessage()+id);
 		// User u = resttemplate.getForObject("http://localhost:8021/" + id,
 		// User.class);
-		try {
-			Thread.sleep(2000L);
-			log.info("Finally Found User" + id);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			Thread.sleep(2000L);
+//			log.info("Finally Found User" + id);
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
 		return CompletableFuture.completedFuture(u.get());
 	}
 
@@ -60,6 +65,7 @@ public class RentalServiceImpl implements RentalService {
 		log.info("Looking for Movie" + id + " " + Thread.currentThread().getName());
 
 		Optional<Movie> m = catclient.getMovieById(id);
+		if(m.isEmpty()) throw new MovieNotFoundException(ExceptionMessage.MOVIE_NOTFOUND.getMessage()+id);
 		// Movie m = resttemplate.getForObject("http://localhost:8022/getmovie/mid/" +
 		// id, Movie.class);
 		log.info("Finally Found Movie" + id);
@@ -90,5 +96,12 @@ public class RentalServiceImpl implements RentalService {
 	public void deleteById(Integer id) {
 		repo.deleteById(id);
 	}
+
+	@Override
+	public Optional<Rental> findById(Integer id) {
+		return repo.findById(id);
+	}
+
+	
 
 }

@@ -3,8 +3,11 @@ package com.movie.rental.controller;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -15,6 +18,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.movie.rental.exception.RentalNotFoundException;
+import com.movie.rental.model.ExceptionMessage;
 import com.movie.rental.model.Movie;
 import com.movie.rental.model.Rental;
 import com.movie.rental.model.User;
@@ -27,13 +32,14 @@ public class RentalController {
 	private RentalService service;
 
 	@PostMapping("/createrental")
-	public Rental createRental(@RequestBody Rental rental) throws InterruptedException, ExecutionException {
+	public Rental createRental(@RequestBody @Valid Rental rental) throws InterruptedException, ExecutionException {
 		CompletableFuture<User> u = service.findUser(rental.getUserid());
 		CompletableFuture<Movie> m = service.findMovie(rental.getMovieid());
 		CompletableFuture.allOf(u,m).join();
 		
 		User user = u.get();
 		Movie movie = m.get();
+		
 		
 		Rental newrental = new Rental();
 		Date curr = new Date();
@@ -53,32 +59,47 @@ public class RentalController {
 		newrental.setDuedate(duedate);
 		newrental.setRent(movie.getRent());
 
-
+		
 		return service.createRental(newrental);
 	}
 
 	@GetMapping("/get/userid/{id}")
 	public List<Rental> getAllById(@PathVariable int id) {
-		return service.getRentalByUserId(id);
+		List<Rental> rentallist = service.getRentalByUserId(id);
+		if(rentallist.isEmpty()) throw new RentalNotFoundException(ExceptionMessage.EMPTY.getMessage());
+		return rentallist;
 	}
 
 	@GetMapping("/get/username/{username}")
 	public List<Rental> getAllByUsername(@PathVariable String username) {
-		return service.findByUsername(username);
+		List<Rental> rentallist = service.findByUsername(username);
+		if(rentallist.isEmpty()) throw new RentalNotFoundException(ExceptionMessage.EMPTY.getMessage());
+		return rentallist;
+	}
+	@GetMapping("/get/id/{id}")
+	public Optional<Rental> getById(@PathVariable int id)
+	{
+		Optional<Rental> rental = service.findById(id);
+		if(rental.isEmpty()) throw new RentalNotFoundException(ExceptionMessage.RENTAL_NOTFOUND.getMessage()+id);
+		return rental;
 	}
 
 	@GetMapping("/get/moviename/{moviename}")
 	public List<Rental> getAllByMoviename(@PathVariable String moviename) {
-		return service.findByMoviename(moviename);
+		List<Rental> rentallist = service.findByMoviename(moviename);
+		if(rentallist.isEmpty()) throw new RentalNotFoundException(ExceptionMessage.NO_RECORD.getMessage());
+		return rentallist;
 	}
 
 	@DeleteMapping("/delete/userid/{userid}")
 	public void deleteByUserid(@PathVariable int userid) {
+		if(service.getRentalByUserId(userid).isEmpty()) throw new RentalNotFoundException(ExceptionMessage.NO_RECORD.getMessage());
 		service.deleteByUserid(userid);
 	}
 
 	@DeleteMapping("/delete/id/{id}")
 	public void deleteById(@PathVariable int id) {
+		if(service.findById(id).isEmpty()) throw new RentalNotFoundException(ExceptionMessage.NO_RECORD.getMessage());
 		service.deleteById(id);
 	}
 }
