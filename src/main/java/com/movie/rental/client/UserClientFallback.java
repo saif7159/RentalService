@@ -10,7 +10,8 @@ public class UserClientFallback implements UserClient {
 
 	@Override
 	public Optional<User> findById(int id){
-		return null;
+		Optional<User> user = Optional.of(new User());
+		return user;
 	}
 
 }

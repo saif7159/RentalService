@@ -18,5 +18,4 @@ public interface RentalRepository extends JpaRepository<Rental, Integer> {
 
 	public List<Rental> findByUsername(String user);
 
-//	public void deleteByUserid(Integer userid);
 }

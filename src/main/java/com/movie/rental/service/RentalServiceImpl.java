@@ -4,9 +4,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import javax.management.ServiceNotFoundException;
+import javax.naming.ServiceUnavailableException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -14,6 +18,11 @@ import org.springframework.web.client.RestTemplate;
 import com.movie.rental.client.CatalogueClient;
 import com.movie.rental.client.UserClient;
 import com.movie.rental.dao.RentalRepository;
+import com.movie.rental.exception.MovieNotFoundException;
+import com.movie.rental.exception.RentalNotFoundException;
+import com.movie.rental.exception.ServiceDownException;
+import com.movie.rental.exception.UserNotFoundException;
+import com.movie.rental.model.ExceptionMessage;
 import com.movie.rental.model.Movie;
 import com.movie.rental.model.Rental;
 import com.movie.rental.model.User;
@@ -43,14 +52,16 @@ public class RentalServiceImpl implements RentalService {
 		log.info("Looking up for the user" + id + " " + Thread.currentThread().getName());
 
 		Optional<User> u = userclient.findById(id);
+		if(u.get().getUserid()==0) throw new ServiceDownException(ExceptionMessage.USER_DOWN.getMessage());
+		if(u.isEmpty()) throw new UserNotFoundException(ExceptionMessage.USER_NOTFOUND.getMessage()+id);
 		// User u = resttemplate.getForObject("http://localhost:8021/" + id,
 		// User.class);
-		try {
-			Thread.sleep(2000L);
-			log.info("Finally Found User" + id);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			Thread.sleep(2000L);
+//			log.info("Finally Found User" + id);
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
 		return CompletableFuture.completedFuture(u.get());
 	}
 
@@ -60,6 +71,8 @@ public class RentalServiceImpl implements RentalService {
 		log.info("Looking for Movie" + id + " " + Thread.currentThread().getName());
 
 		Optional<Movie> m = catclient.getMovieById(id);
+		if(m.get().getId()==0) throw new ServiceDownException(ExceptionMessage.MOVIE_DOWN.getMessage());
+		if(m.isEmpty()) throw new MovieNotFoundException(ExceptionMessage.MOVIE_NOTFOUND.getMessage()+id);
 		// Movie m = resttemplate.getForObject("http://localhost:8022/getmovie/mid/" +
 		// id, Movie.class);
 		log.info("Finally Found Movie" + id);
@@ -67,17 +80,23 @@ public class RentalServiceImpl implements RentalService {
 	}
 
 	@Override
+	@Cacheable(value = "rental",key = "#userid")
 	public List<Rental> getRentalByUserId(Integer userid) {
+		
 		return repo.findByUserid(userid);
 	}
 
 	@Override
+	@Cacheable(value = "rental",key = "#movie")
 	public List<Rental> findByMoviename(String movie) {
+		
 		return repo.findByMoviename(movie);
 	}
 
 	@Override
+	@Cacheable(value = "rental",key = "#user")
 	public List<Rental> findByUsername(String user) {
+		
 		return repo.findByUsername(user);
 	}
 
@@ -90,5 +109,12 @@ public class RentalServiceImpl implements RentalService {
 	public void deleteById(Integer id) {
 		repo.deleteById(id);
 	}
+
+	@Override
+	public Optional<Rental> findById(Integer id) {
+		return repo.findById(id);
+	}
+
+	
 
 }

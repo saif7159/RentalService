@@ -1,6 +1,7 @@
 package com.movie.rental.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import com.movie.rental.model.Movie;
@@ -15,6 +16,8 @@ public interface RentalService {
 	public List<Rental> findByMoviename(String movie);
 
 	public List<Rental> findByUsername(String user);
+	
+	public Optional<Rental> findById(Integer id);
 
 	public void deleteByUserid(Integer userid);
 
