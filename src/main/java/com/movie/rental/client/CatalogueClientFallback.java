@@ -10,8 +10,8 @@ public class CatalogueClientFallback implements CatalogueClient {
 
 	@Override
 	public Optional<Movie> getMovieById(int id) {
-		
-		return null;
+		Optional<Movie> movie = Optional.of(new Movie());
+		return movie ;
 	}
 
 }
