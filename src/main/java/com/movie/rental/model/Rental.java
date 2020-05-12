@@ -33,7 +33,7 @@ public class Rental {
 	private String moviename;
 	private int year;
 	private String director;
-	private Date rentaldate;
-	private Date duedate;
+	private String rentaldate;
+	private String duedate;
 	private float rent;
 }

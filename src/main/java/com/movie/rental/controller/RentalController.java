@@ -1,5 +1,6 @@
 package com.movie.rental.controller;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -46,7 +47,9 @@ public class RentalController {
 		Calendar c = Calendar.getInstance();
 		c.setTime(curr);
 		c.add(Calendar.DATE, 7); // Setting return date after 7 days
-		Date duedate = c.getTime();
+		Date due = c.getTime();
+		String currentdate = new SimpleDateFormat("dd-MM-yyyy HH:mm").format(curr);
+		String duedate = new SimpleDateFormat("dd-MM-yyyy HH:mm").format(due);
 		//log.debug(duedate.toString());
 		newrental.setUserid(rental.getUserid());
 		newrental.setMovieid(rental.getMovieid());
@@ -55,7 +58,7 @@ public class RentalController {
 		newrental.setMoviename(movie.getMovie());
 		newrental.setYear(movie.getYear());
 		newrental.setDirector(movie.getDirector());
-		newrental.setRentaldate(curr);
+		newrental.setRentaldate(currentdate);
 		newrental.setDuedate(duedate);
 		newrental.setRent(movie.getRent());
 
