@@ -37,7 +37,13 @@ public class RentalExceptionController {
 		ErrorResponse error = new ErrorResponse(HttpStatus.NOT_FOUND.value(), exception.getMessage());
 		return new ResponseEntity<ErrorResponse>(error, HttpStatus.NOT_FOUND);
 	}
-
+	
+	@ExceptionHandler(value = MovieUnavailableException.class)
+	public ResponseEntity<ErrorResponse> movieOutOfStock(MovieUnavailableException exception)
+	{
+		ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(),exception.getMessage());
+		return new ResponseEntity<ErrorResponse>(error,HttpStatus.BAD_REQUEST);
+	}
 	@ExceptionHandler(value = MethodArgumentTypeMismatchException.class)
 	public ResponseEntity<ErrorResponse> invalidArgumentType(MethodArgumentTypeMismatchException exception) {
 		ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), exception.getMessage());

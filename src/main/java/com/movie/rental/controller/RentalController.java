@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutionException;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +32,8 @@ import com.movie.rental.service.RentalService;
 public class RentalController {
 	@Autowired
 	private RentalService service;
+	@Autowired
+	private CacheManager manager;
 
 	@PostMapping("/createrental")
 	public Rental createRental(@RequestBody @Valid Rental rental) throws InterruptedException, ExecutionException {
@@ -61,8 +64,8 @@ public class RentalController {
 		newrental.setRentaldate(currentdate);
 		newrental.setDuedate(duedate);
 		newrental.setRent(movie.getRent());
-
 		
+		manager.getCache("rental").clear();
 		return service.createRental(newrental);
 	}
 
@@ -97,12 +100,14 @@ public class RentalController {
 	@DeleteMapping("/delete/userid/{userid}")
 	public void deleteByUserid(@PathVariable int userid) {
 		if(service.getRentalByUserId(userid).isEmpty()) throw new RentalNotFoundException(ExceptionMessage.NO_RECORD.getMessage());
+		manager.getCache("rental").clear();
 		service.deleteByUserid(userid);
 	}
 
 	@DeleteMapping("/delete/id/{id}")
 	public void deleteById(@PathVariable int id) {
 		if(service.findById(id).isEmpty()) throw new RentalNotFoundException(ExceptionMessage.NO_RECORD.getMessage());
+		manager.getCache("rental").clear();
 		service.deleteById(id);
 	}
 }

@@ -119,7 +119,7 @@ class RentalControllerTest {
 				"	\r\n" + 
 				"}";
 		CompletableFuture<User> user = CompletableFuture.completedFuture(new User(1, "saif", "abc@gmail.com"));
-		CompletableFuture<Movie> movie = CompletableFuture.completedFuture(new Movie(1, "ABC", "MMM", "XYZ", 2015, 125.5F));
+		CompletableFuture<Movie> movie = CompletableFuture.completedFuture(new Movie(1, "ABC", "MMM", "XYZ", 2015, 125.5F, true));
 		Rental rental = new Rental(1, 1, 1, "saif", "ABC", 2015, "XYZ", "11-05-2020 17:41", "11-05-2020 21:10", 125.5F);
 		when(service.findUser(Mockito.anyInt())).thenReturn(user);
 		when(service.findMovie(Mockito.anyInt())).thenReturn(movie);

@@ -19,4 +19,5 @@ public class Movie {
 	private String director;
 	private int year;
 	private float rent;
+	private boolean available;
 }
